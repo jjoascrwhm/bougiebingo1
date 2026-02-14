@@ -1,226 +1,1345 @@
-        name: document.getElementById('ticketName').value,
-        email: document.getElementById('ticketEmail').value,
-        phone: document.getElementById('ticketPhone').value || '',
-        ticketQuantity: parseInt(document.getElementById('ticketQty').value),
-        message: '',
-        donationAmount: 0,
-        sponsorTier: '',
-        createdAt: new Date().toISOString()
-      };
-      
-      if (window.dataSdk) {
-        const result = await window.dataSdk.create(data);
-        if (result.isOk) {
-          showMessage('ticketMessage', 'Thank you! Your ticket reservation has been received. Check your email for confirmation.', true);
-          e.target.reset();
-        } else {
-          showMessage('ticketMessage', 'Something went wrong. Please try again.', false);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bougie Bingo | Jack and Jill of America, Inc. - El Paso Southern New Mexico Chapter</title>
+    <style>
+        :root {
+            --royal-blue: #0a1628;
+            --royal-blue-light: #1e3a5f;
+            --royal-blue-deep: #050d1a;
+            --pink-accent: #d4a5a5;
+            --pink-deep: #b76e79;
+            --pink-glow: rgba(212, 165, 165, 0.3);
+            --gold: #c9b037;
+            --white: #ffffff;
+            --cream: #f8f6f3;
+            --text-muted: #8a9bb8;
         }
-      } else {
-        showMessage('ticketMessage', 'Thank you! Your ticket reservation has been received.', true);
-        e.target.reset();
-      }
-      
-      setButtonLoading('ticketBtn', false, 'Reserve Tickets');
-    });
 
-    // Donation form
-    let selectedDonation = 0;
-    document.querySelectorAll('.donation-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.donation-btn').forEach(b => {
-          b.classList.remove('border-pink-500', 'bg-pink-500/20');
-        });
-        btn.classList.add('border-pink-500', 'bg-pink-500/20');
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            background-color: var(--cream);
+            color: var(--royal-blue);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Typography */
+        h1, h2, h3, h4 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        /* Shimmer Animation */
+        @keyframes shimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+
+        .shimmer-text {
+            background: linear-gradient(90deg, var(--white) 0%, var(--pink-accent) 25%, var(--white) 50%, var(--pink-accent) 75%, var(--white) 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 4s linear infinite;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(10, 22, 40, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            padding: 1.2rem 0;
+            border-bottom: 1px solid rgba(212, 165, 165, 0.2);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--white);
+            text-decoration: none;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .logo span {
+            color: var(--pink-accent);
+            font-weight: 400;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 3rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--pink-accent);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--pink-accent);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--royal-blue-deep) 0%, var(--royal-blue) 50%, var(--royal-blue-light) 100%);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding-top: 100px;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('https://kimi-web-img.moonshot.cn/img/files.idyllic.app/b986b2ad1071100302e1a21eb1565d46001072d6');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.4;
+            filter: brightness(0.6) contrast(1.1);
+        }
+
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, rgba(10,22,40,0.3) 0%, rgba(10,22,40,0.8) 100%);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            max-width: 1000px;
+            padding: 3rem;
+        }
+
+        .chapter-presenter {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .hero-subtitle {
+            font-size: 0.9rem;
+            color: var(--pink-accent);
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+        }
+
+        .hero h1 {
+            font-size: clamp(3.5rem, 8vw, 7rem);
+            color: var(--white);
+            font-weight: 300;
+            margin-bottom: 0.5rem;
+            line-height: 1;
+        }
+
+        .hero h1 strong {
+            display: block;
+            font-weight: 600;
+            font-style: italic;
+            color: var(--pink-accent);
+            text-shadow: 0 0 40px rgba(212, 165, 165, 0.3);
+        }
+
+        .hero-tagline {
+            font-size: 1.3rem;
+            color: var(--text-muted);
+            font-style: italic;
+            margin-bottom: 3rem;
+            letter-spacing: 1px;
+        }
+
+        .event-meta {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 3rem;
+            margin: 3rem 0;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(212, 165, 165, 0.2);
+            border-radius: 2px;
+        }
+
+        .meta-item {
+            text-align: center;
+        }
+
+        .meta-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--pink-accent);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .meta-value {
+            font-size: 1.1rem;
+            color: var(--white);
+            font-weight: 400;
+            letter-spacing: 1px;
+        }
+
+        .attire-note {
+            color: var(--pink-accent);
+            font-size: 0.95rem;
+            letter-spacing: 2px;
+            margin-top: 2rem;
+            padding: 1rem 2rem;
+            border-top: 1px solid rgba(212, 165, 165, 0.3);
+            border-bottom: 1px solid rgba(212, 165, 165, 0.3);
+            display: inline-block;
+        }
+
+        .cta-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            justify-content: center;
+            margin-top: 3rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1.1rem 3rem;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.4s ease;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: var(--pink-accent);
+            color: var(--royal-blue-deep);
+        }
+
+        .btn-primary:hover {
+            background: var(--white);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(212, 165, 165, 0.3);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--white);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--pink-accent);
+            color: var(--pink-accent);
+        }
+
+        .btn-gold {
+            background: transparent;
+            color: var(--gold);
+            border: 1px solid var(--gold);
+        }
+
+        .btn-gold:hover {
+            background: var(--gold);
+            color: var(--royal-blue-deep);
+        }
+
+        /* Progress Bar Section */
+        .progress-section {
+            background: var(--royal-blue);
+            padding: 4rem 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(212, 165, 165, 0.1) 0%, transparent 70%);
+        }
+
+        .progress-container {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .progress-title {
+            color: var(--white);
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 500;
+        }
+
+        .progress-goal {
+            color: var(--pink-accent);
+            font-size: 2.5rem;
+            font-weight: 300;
+            line-height: 1;
+        }
+
+        .progress-goal span {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            display: block;
+            margin-top: 0.5rem;
+        }
+
+        .progress-bar-container {
+            background: rgba(255, 255, 255, 0.1);
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--pink-accent) 0%, var(--gold) 100%);
+            border-radius: 6px;
+            position: relative;
+            transition: width 2s ease-out;
+            box-shadow: 0 0 20px rgba(212, 165, 165, 0.5);
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        .progress-stats {
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .progress-current {
+            color: var(--white);
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .progress-percentage {
+            color: var(--gold);
+            font-weight: 600;
+        }
+
+        /* Section Styles */
+        section {
+            padding: 6rem 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-header h2 {
+            font-size: 2.8rem;
+            color: var(--royal-blue);
+            margin-bottom: 1rem;
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-header h2::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--pink-deep), transparent);
+        }
+
+        .section-header p {
+            color: #666;
+            max-width: 600px;
+            margin: 2rem auto 0;
+            font-size: 1.1rem;
+        }
+
+        /* Embed Sections */
+        .embed-section {
+            background: var(--white);
+            padding: 4rem;
+            margin: 2rem 0;
+            box-shadow: 0 20px 60px rgba(10, 22, 40, 0.08);
+            border: 1px solid rgba(10, 22, 40, 0.06);
+        }
+
+        .embed-container {
+            background: linear-gradient(135deg, #fafbfc 0%, #f0f2f5 100%);
+            border: 1px solid rgba(10, 22, 40, 0.1);
+            padding: 5rem 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .embed-container::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            border: 1px dashed rgba(10, 22, 40, 0.15);
+            pointer-events: none;
+        }
+
+        .embed-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--pink-deep);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .embed-title {
+            font-size: 1.5rem;
+            color: var(--royal-blue);
+            font-weight: 400;
+        }
+
+        /* Event Details */
+        .event-details {
+            background: var(--royal-blue);
+            color: var(--white);
+            position: relative;
+        }
+
+        .event-details .section-header h2 {
+            color: var(--white);
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .detail-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(212, 165, 165, 0.15);
+            padding: 3rem 2rem;
+            text-align: center;
+            transition: all 0.4s ease;
+        }
+
+        .detail-card:hover {
+            border-color: var(--pink-accent);
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .detail-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            opacity: 0.9;
+        }
+
+        .detail-card h3 {
+            color: var(--pink-accent);
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .detail-card p {
+            color: var(--text-muted);
+            line-height: 1.8;
+            font-size: 1.05rem;
+        }
+
+        /* About Section */
+        .about-section {
+            background: var(--white);
+        }
+
+        .about-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5rem;
+            align-items: center;
+        }
+
+        .about-text h3 {
+            font-size: 2rem;
+            color: var(--royal-blue);
+            margin-bottom: 1.5rem;
+            font-weight: 400;
+        }
+
+        .about-text p {
+            color: #555;
+            margin-bottom: 1.5rem;
+            line-height: 1.9;
+            font-size: 1.1rem;
+        }
+
+        .media-container {
+            background: var(--royal-blue);
+            height: 450px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(212, 165, 165, 0.2);
+        }
+
+        .media-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(212, 165, 165, 0.1), transparent);
+        }
+
+        .media-placeholder {
+            color: var(--text-muted);
+            text-align: center;
+            z-index: 1;
+            padding: 2rem;
+        }
+
+        .play-icon {
+            width: 80px;
+            height: 80px;
+            border: 2px solid var(--pink-accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 1.5rem;
+            color: var(--pink-accent);
+            transition: all 0.3s ease;
+        }
+
+        .media-container:hover .play-icon {
+            background: var(--pink-accent);
+            color: var(--royal-blue);
+        }
+
+        /* Impact Section */
+        .impact-section {
+            background: linear-gradient(180deg, var(--cream) 0%, var(--white) 100%);
+        }
+
+        .impact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 3rem;
+        }
+
+        .impact-card {
+            background: var(--white);
+            padding: 3rem;
+            box-shadow: 0 10px 40px rgba(10, 22, 40, 0.06);
+            border-top: 3px solid var(--pink-accent);
+            transition: transform 0.3s ease;
+        }
+
+        .impact-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .impact-card h3 {
+            color: var(--royal-blue);
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .impact-card p {
+            color: #666;
+            line-height: 1.8;
+        }
+
+        /* Beneficiary Section */
+        .beneficiary-section {
+            background: var(--royal-blue);
+            color: var(--white);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .beneficiary-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(212, 165, 165, 0.1) 0%, transparent 70%);
+        }
+
+        .beneficiary-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .beneficiary-logo {
+            width: 150px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--pink-accent);
+            border-radius: 50%;
+            margin: 0 auto 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: var(--pink-accent);
+        }
+
+        .beneficiary-section h3 {
+            font-size: 2.2rem;
+            margin-bottom: 1.5rem;
+            font-weight: 400;
+        }
+
+        .beneficiary-section p {
+            max-width: 700px;
+            margin: 0 auto;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            line-height: 1.9;
+        }
+
+        /* Sponsorship Section */
+        .sponsorship-section {
+            background: var(--white);
+        }
+
+        .tiers-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .tier-card {
+            background: var(--white);
+            border: 1px solid rgba(10, 22, 40, 0.1);
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+            transition: all 0.4s ease;
+        }
+
+        .tier-card:hover {
+            border-color: var(--pink-accent);
+            box-shadow: 0 20px 60px rgba(10, 22, 40, 0.1);
+            transform: translateY(-10px);
+        }
+
+        .tier-card.featured {
+            background: var(--royal-blue);
+            border-color: var(--royal-blue);
+            transform: scale(1.05);
+        }
+
+        .tier-card.featured:hover {
+            transform: scale(1.05) translateY(-10px);
+        }
+
+        .tier-header {
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid rgba(10, 22, 40, 0.1);
+        }
+
+        .tier-card.featured .tier-header {
+            border-bottom-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .tier-name {
+            font-size: 1.3rem;
+            color: var(--royal-blue);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .tier-card.featured .tier-name {
+            color: var(--pink-accent);
+        }
+
+        .tier-price {
+            font-size: 3.5rem;
+            color: var(--royal-blue);
+            font-weight: 300;
+            line-height: 1;
+        }
+
+        .tier-card.featured .tier-price {
+            color: var(--white);
+        }
+
+        .tier-price span {
+            font-size: 1rem;
+            color: #999;
+            display: block;
+            margin-top: 0.5rem;
+            letter-spacing: 2px;
+        }
+
+        .tier-benefits {
+            list-style: none;
+            margin: 2rem 0;
+            text-align: left;
+        }
+
+        .tier-benefits li {
+            padding: 0.8rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            color: #555;
+            border-bottom: 1px solid rgba(10, 22, 40, 0.05);
+        }
+
+        .tier-card.featured .tier-benefits li {
+            color: var(--text-muted);
+            border-bottom-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .tier-benefits li::before {
+            content: '—';
+            position: absolute;
+            left: 0;
+            color: var(--pink-deep);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--royal-blue-deep);
+            color: var(--text-muted);
+            padding: 5rem 2rem 2rem;
+            border-top: 1px solid rgba(212, 165, 165, 0.2);
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-section h4 {
+            color: var(--pink-accent);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 2rem;
+            font-weight: 500;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .social-links a {
+            width: 50px;
+            height: 50px;
+            border: 1px solid rgba(212, 165, 165, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--pink-accent);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+        }
+
+        .social-links a:hover {
+            background: var(--pink-accent);
+            color: var(--royal-blue-deep);
+            border-color: var(--pink-accent);
+        }
+
+        .footer-btn {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+        }
+
+        .contact-form input,
+        .contact-form textarea {
+            width: 100%;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(212, 165, 165, 0.2);
+            color: var(--white);
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: border-color 0.3s;
+        }
+
+        .contact-form input:focus,
+        .contact-form textarea:focus {
+            outline: none;
+            border-color: var(--pink-accent);
+        }
+
+        .contact-form input::placeholder,
+        .contact-form textarea::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .contact-form button {
+            width: 100%;
+            padding: 1rem;
+            background: var(--pink-accent);
+            border: none;
+            color: var(--royal-blue-deep);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.8rem;
+        }
+
+        .contact-form button:hover {
+            background: var(--white);
+        }
+
+        .footer-info p {
+            margin-bottom: 1rem;
+            line-height: 1.8;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(212, 165, 165, 0.1);
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .tiers-grid {
+                grid-template-columns: 1fr;
+                max-width: 500px;
+            }
+
+            .tier-card.featured {
+                transform: none;
+                order: -1;
+            }
+
+            .tier-card.featured:hover {
+                transform: translateY(-10px);
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+
+            .progress-header {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero h1 {
+                font-size: 2.8rem;
+            }
+
+            .event-meta {
+                gap: 1.5rem;
+            }
+
+            .about-content {
+                grid-template-columns: 1fr;
+            }
+
+            .embed-section {
+                padding: 2rem;
+            }
+
+            .impact-grid {
+                grid-template-columns: 1fr;
+            }
+
+            section {
+                padding: 4rem 1.5rem;
+            }
+
+            .progress-goal {
+                font-size: 2rem;
+            }
+        }
+
+        /* Smooth Scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--royal-blue);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--pink-accent);
+            border-radius: 4px;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <a href="#" class="logo">JJOA <span>EPSNM</span></a>
+            <ul class="nav-links">
+                <li><a href="#tickets">Tickets</a></li>
+                <li><a href="#donate">Donate</a></li>
+                <li><a href="#event">Event</a></li>
+                <li><a href="#sponsor">Sponsor</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <p class="chapter-presenter">El Paso-Southern New Mexico Chapter of Jack and Jill of America, Inc. presents</p>
+            <p class="hero-subtitle">A Chapter-Level Fundraiser</p>
+            <h1>Bougie <strong>Bingo</strong></h1>
+            <p class="hero-tagline">An Evening of Sophistication, Strategy & Philanthropy</p>
+            
+            <div class="event-meta">
+                <div class="meta-item">
+                    <div class="meta-label">Date</div>
+                    <div class="meta-value">[Insert Date]</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Time</div>
+                    <div class="meta-value">[Insert Time]</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Venue</div>
+                    <div class="meta-value">Dreamy Event Center</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Investment</div>
+                    <div class="meta-value">$75 Per Person</div>
+                </div>
+            </div>
+            
+            <p class="attire-note">Formal Attire Required • Ball Gowns & Suits • Royal Blue & Pink Bling Encouraged</p>
+            
+            <div class="cta-group">
+                <a href="#tickets" class="btn btn-primary">Purchase Tickets</a>
+                <a href="#donate" class="btn btn-outline">Make a Donation</a>
+                <a href="#sponsor" class="btn btn-gold">Become a Sponsor</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Fundraising Progress Section -->
+    <section class="progress-section">
+        <div class="progress-container">
+            <div class="progress-header">
+                <div class="progress-title">Chapter Fundraising Progress</div>
+                <div class="progress-goal">$15,000<span>Goal</span></div>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" style="width: 0%;" data-progress="65"></div>
+            </div>
+            <div class="progress-stats">
+                <div>
+                    <span class="progress-current">$9,750</span>
+                    <span style="color: var(--text-muted); margin-left: 0.5rem;">Raised</span>
+                </div>
+                <div class="progress-percentage">65% of Goal</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Ticket Purchase Section -->
+    <section id="tickets">
+        <div class="container">
+            <div class="section-header">
+                <h2>Secure Your Place</h2>
+                <p>Join us for an exclusive evening of high-stakes bingo, premium prizes, and meaningful impact. Limited availability.</p>
+            </div>
+            <div class="embed-section">
+                <div class="embed-container">
+                    <div class="embed-label">Integration Area</div>
+                    <div class="embed-title">Ticket Purchase Platform</div>
+                    <p style="color: #999; margin-top: 1rem;">Eventbrite, Classy, or custom ticketing system embed</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Donation Section -->
+    <section id="donate" style="background: var(--cream); padding-top: 0;">
+        <div class="container">
+            <div class="section-header">
+                <h2>Contribute to the Cause</h2>
+                <p>Unable to attend but wish to support our mission? Your generosity directly impacts the lives of youth in our community.</p>
+            </div>
+            <div class="embed-section">
+                <div class="embed-container">
+                    <div class="embed-label">Integration Area</div>
+                    <div class="embed-title">Donation Processing Platform</div>
+                    <p style="color: #999; margin-top: 1rem;">PayPal, Stripe, or dedicated donation portal embed</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Event Details Section -->
+    <section id="event" class="event-details">
+        <div class="container">
+            <div class="section-header">
+                <h2>Evening Details</h2>
+                <p style="color: var(--text-muted);">A curated experience of elegance and entertainment</p>
+            </div>
+            <div class="details-grid">
+                <div class="detail-card">
+                    <div class="detail-icon">◆</div>
+                    <h3>Reception</h3>
+                    <p>Cocktail hour with<br>passed hors d'oeuvres<br>and signature beverages</p>
+                </div>
+                <div class="detail-card">
+                    <div class="detail-icon">◆</div>
+                    <h3>Silent Auction</h3>
+                    <p>Exclusive items and<br>experiences available for<br>discerning bidders</p>
+                </div>
+                <div class="detail-card">
+                    <div class="detail-icon">◆</div>
+                    <h3>Gourmet Dinner</h3>
+                    <p>Chef-prepared cuisine<br>served with premium<br>wine selections</p>
+                </div>
+                <div class="detail-card">
+                    <div class="detail-icon">◆</div>
+                    <h3>High-Stakes Bingo</h3>
+                    <p>Multiple rounds with<br>luxury prizes and<br>surprise revelations</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>The EPSNM Chapter</h2>
+                <p>Excellence in leadership, service, and community impact</p>
+            </div>
+            <div class="about-content">
+                <div class="about-text">
+                    <h3>A Legacy of Leadership</h3>
+                    <p>The El Paso–Southern New Mexico Chapter of Jack and Jill of America, Inc. represents a distinguished tradition of cultivating African American leaders. Our mothers are dedicated to the development of children through cultural exposure, leadership training, and philanthropic service.</p>
+                    <p>Since our founding, we have maintained an unwavering commitment to nurturing the next generation while strengthening the bonds of our community. Bougie Bingo represents our premier chapter-level fundraising initiative, directly supporting programs that transform lives.</p>
+                    <p>We invite you to join us in this elegant celebration of our shared commitment to excellence and impact.</p>
+                </div>
+                <div class="media-container">
+                    <div class="media-placeholder">
+                        <div class="play-icon">▶</div>
+                        <p>Chapter Video or<br>Photo Gallery</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Foundation Impact Section -->
+    <section class="impact-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Foundation Impact</h2>
+                <p>Supporting the Jack and Jill of America Foundation</p>
+            </div>
+            <div class="impact-grid">
+                <div class="impact-card">
+                    <h3>Educational Advancement</h3>
+                    <p>Scholarship programs and educational resources that remove barriers to academic excellence for underserved students in our region.</p>
+                </div>
+                <div class="impact-card">
+                    <h3>Leadership Development</h3>
+                    <p>Comprehensive training and mentorship initiatives that cultivate the executive presence and civic engagement of tomorrow's leaders.</p>
+                </div>
+                <div class="impact-card">
+                    <h3>Community Investment</h3>
+                    <p>Strategic partnerships and service projects that address critical needs and create sustainable change in El Paso and Southern New Mexico.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Beneficiary Section -->
+    <section class="beneficiary-section">
+        <div class="container beneficiary-content">
+            <div class="beneficiary-logo">★</div>
+            <h3>Benefiting the Boys & Girls Club of El Paso</h3>
+            <p>Proceeds from Bougie Bingo directly support the Boys & Girls Club of El Paso in their mission to enable all young people, especially those who need us most, to reach their full potential as productive, caring, responsible citizens. Together, we create pathways to success for the youth of our community.</p>
+        </div>
+    </section>
+
+    <!-- Sponsorship Section -->
+    <section id="sponsor" class="sponsorship-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Partnership Opportunities</h2>
+                <p>Align your brand with excellence and community impact</p>
+            </div>
+            <div class="tiers-grid">
+                <div class="tier-card">
+                    <div class="tier-header">
+                        <h3 class="tier-name">Four Corners</h3>
+                        <div class="tier-price">$1,000</div>
+                    </div>
+                    <ul class="tier-benefits">
+                        <li>Logo recognition on event materials</li>
+                        <li>Social media acknowledgment</li>
+                        <li>Two reserved seats</li>
+                        <li>Program listing</li>
+                        <li>Silent auction visibility</li>
+                    </ul>
+                    <a href="#contact" class="btn btn-outline" style="width: 100%;">Select</a>
+                </div>
+                
+                <div class="tier-card featured">
+                    <div class="tier-header">
+                        <h3 class="tier-name">Picture Frame</h3>
+                        <div class="tier-price">$2,500</div>
+                    </div>
+                    <ul class="tier-benefits">
+                        <li>Prominent logo placement</li>
+                        <li>Dedicated social feature</li>
+                        <li>Four reserved seats</li>
+                        <li>Full-page program recognition</li>
+                        <li>Branded table signage</li>
+                        <li>Verbal acknowledgment</li>
+                    </ul>
+                    <a href="#contact" class="btn btn-primary" style="width: 100%;">Select</a>
+                </div>
+                
+                <div class="tier-card">
+                    <div class="tier-header">
+                        <h3 class="tier-name">Blackout</h3>
+                        <div class="tier-price">$5,000</div>
+                    </div>
+                    <ul class="tier-benefits">
+                        <li>Premier brand positioning</li>
+                        <li>Comprehensive media package</li>
+                        <li>Eight reserved seats</li>
+                        <li>Cover program placement</li>
+                        <li>Exclusive table presentation</li>
+                        <li>Speaking opportunity</li>
+                        <li>VIP reception access</li>
+                    </ul>
+                    <a href="#contact" class="btn btn-gold" style="width: 100%;">Select</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact">
+        <div class="footer-grid">
+            <div class="footer-section">
+                <h4>Connect</h4>
+                <div class="social-links">
+                    <a href="#" aria-label="Facebook">f</a>
+                    <a href="#" aria-label="Instagram">📷</a>
+                </div>
+                <a href="#" class="btn btn-outline footer-btn">Share Event</a>
+                <a href="#" class="btn btn-primary footer-btn">Download Flyer</a>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Inquire</h4>
+                <form class="contact-form">
+                    <input type="text" placeholder="Full Name" required>
+                    <input type="email" placeholder="Email Address" required>
+                    <textarea rows="3" placeholder="Message" required></textarea>
+                    <button type="submit">Send</button>
+                </form>
+            </div>
+            
+            <div class="footer-section footer-info">
+                <h4>Chapter Information</h4>
+                <p><strong>Jack and Jill of America, Inc.</strong><br>
+                El Paso–Southern New Mexico Chapter</p>
+                <p>P.O. Box [Number]<br>
+                El Paso, Texas [Zip]</p>
+                <p>epsnm@jackandjillinc.org<br>
+                (915) [Phone Number]</p>
+            </div>
+        </div>
         
-        const amount = btn.dataset.amount;
-        const customContainer = document.getElementById('customAmountContainer');
+        <div class="footer-bottom">
+            <p>&copy; 2024 Jack and Jill of America, Inc. — El Paso Southern New Mexico Chapter</p>
+            <p style="margin-top: 0.5rem; font-size: 0.8rem;">A 501(c)(3) Organization | All Rights Reserved</p>
+        </div>
+    </footer>
+
+    <script>
+        // Animate progress bar on scroll
+        const progressBar = document.querySelector('.progress-bar');
+        const targetProgress = progressBar.getAttribute('data-progress');
         
-        if (amount === 'custom') {
-          customContainer.classList.remove('hidden');
-          selectedDonation = 0;
-        } else {
-          customContainer.classList.add('hidden');
-          selectedDonation = parseInt(amount);
-          document.getElementById('donationAmount').value = amount;
-        }
-      });
-    });
+        const observerOptions = {
+            threshold: 0.5
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        progressBar.style.width = targetProgress + '%';
+                    }, 300);
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+        
+        observer.observe(progressBar);
+    </script>
 
-    document.getElementById('customAmount').addEventListener('input', (e) => {
-      selectedDonation = parseInt(e.target.value) || 0;
-      document.getElementById('donationAmount').value = selectedDonation;
-    });
-
-    document.getElementById('donateForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const amount = selectedDonation || parseInt(document.getElementById('customAmount').value) || 0;
-      
-      if (amount < 1) {
-        showMessage('donateMessage', 'Please select or enter a donation amount.', false);
-        return;
-      }
-      
-      if (recordCount >= 999) {
-        showMessage('donateMessage', 'System limit reached. Please contact us directly.', false);
-        return;
-      }
-      
-      setButtonLoading('donateBtn', true, 'Donate Now');
-      
-      const data = {
-        type: 'donation',
-        name: document.getElementById('donorName').value,
-        email: document.getElementById('donorEmail').value,
-        phone: '',
-        ticketQuantity: 0,
-        donationAmount: amount,
-        message: '',
-        sponsorTier: '',
-        createdAt: new Date().toISOString()
-      };
-      
-      if (window.dataSdk) {
-        const result = await window.dataSdk.create(data);
-        if (result.isOk) {
-          showMessage('donateMessage', `Thank you for your generous $${amount} donation! A receipt will be sent to your email.`, true);
-          e.target.reset();
-          document.querySelectorAll('.donation-btn').forEach(b => b.classList.remove('border-pink-500', 'bg-pink-500/20'));
-          document.getElementById('customAmountContainer').classList.add('hidden');
-          selectedDonation = 0;
-        } else {
-          showMessage('donateMessage', 'Something went wrong. Please try again.', false);
-        }
-      } else {
-        showMessage('donateMessage', `Thank you for your generous donation!`, true);
-        e.target.reset();
-      }
-      
-      setButtonLoading('donateBtn', false, 'Donate Now');
-    });
-
-    // Sponsor modal
-    function selectSponsor(tier, amount) {
-      document.getElementById('sponsorTier').value = tier;
-      document.getElementById('sponsorAmount').value = amount;
-      document.getElementById('sponsorModalTitle').textContent = `${tier} Sponsor`;
-      document.getElementById('sponsorModalSubtitle').textContent = `$${amount.toLocaleString()} Sponsorship`;
-      document.getElementById('sponsorModal').classList.remove('hidden');
-      document.body.style.overflow = 'hidden';
-    }
-
-    function closeSponsorModal() {
-      document.getElementById('sponsorModal').classList.add('hidden');
-      document.body.style.overflow = '';
-    }
-
-    document.getElementById('sponsorForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      if (recordCount >= 999) {
-        showMessage('sponsorMessage', 'System limit reached. Please contact us directly.', false);
-        return;
-      }
-      
-      setButtonLoading('sponsorBtn', true, 'Submit Sponsorship');
-      
-      const data = {
-        type: 'sponsor',
-        name: document.getElementById('sponsorName').value,
-        email: document.getElementById('sponsorEmail').value,
-        phone: document.getElementById('sponsorPhone').value || '',
-        message: document.getElementById('sponsorCompany').value || '',
-        ticketQuantity: 0,
-        donationAmount: parseInt(document.getElementById('sponsorAmount').value),
-        sponsorTier: document.getElementById('sponsorTier').value,
-        createdAt: new Date().toISOString()
-      };
-      
-      if (window.dataSdk) {
-        const result = await window.dataSdk.create(data);
-        if (result.isOk) {
-          showMessage('sponsorMessage', 'Thank you for becoming a sponsor! We will contact you shortly with next steps.', true);
-          setTimeout(() => {
-            closeSponsorModal();
-            e.target.reset();
-          }, 2000);
-        } else {
-          showMessage('sponsorMessage', 'Something went wrong. Please try again.', false);
-        }
-      } else {
-        showMessage('sponsorMessage', 'Thank you for your sponsorship interest!', true);
-        setTimeout(() => closeSponsorModal(), 2000);
-      }
-      
-      setButtonLoading('sponsorBtn', false, 'Submit Sponsorship');
-    });
-
-    // Contact form
-    document.getElementById('contactForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      if (recordCount >= 999) {
-        showMessage('contactMessageStatus', 'System limit reached. Please try again later.', false);
-        return;
-      }
-      
-      setButtonLoading('contactBtn', true, 'Send Message');
-      
-      const data = {
-        type: 'contact',
-        name: document.getElementById('contactName').value,
-        email: document.getElementById('contactEmail').value,
-        phone: '',
-        message: document.getElementById('contactMessage').value,
-        ticketQuantity: 0,
-        donationAmount: 0,
-        sponsorTier: '',
-        createdAt: new Date().toISOString()
-      };
-      
-      if (window.dataSdk) {
-        const result = await window.dataSdk.create(data);
-        if (result.isOk) {
-          showMessage('contactMessageStatus', 'Thank you for your message! We\'ll get back to you soon.', true);
-          e.target.reset();
-        } else {
-          showMessage('contactMessageStatus', 'Something went wrong. Please try again.', false);
-        }
-      } else {
-        showMessage('contactMessageStatus', 'Thank you for your message!', true);
-        e.target.reset();
-      }
-      
-      setButtonLoading('contactBtn', false, 'Send Message');
-    });
-
-    // Initialize SDKs
-    async function init() {
-      // Initialize Element SDK
-      if (window.elementSdk) {
-        window.elementSdk.init({
-          defaultConfig,
-          onConfigChange,
-          mapToCapabilities,
-          mapToEditPanelValues
-        });
-      }
-      
-      // Initialize Data SDK
-      if (window.dataSdk) {
-        const result = await window.dataSdk.init(dataHandler);
-        if (!result.isOk) {
-          console.error('Failed to initialize Data SDK');
-        }
-      }
-      
-      // Apply initial config
-      onConfigChange(config);
-    }
-
-    init();
-  </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cd5db12c385c6a2',t:'MTc3MTAwMTc1MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
-
